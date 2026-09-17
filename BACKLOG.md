@@ -49,11 +49,10 @@ because it changes the actual price._
 _Add-parts, model-first layout, colour-by-height and the %-split removal shipped
 in v1.0.5. Remaining:_
 
-- **Auto-estimate the colour split on quote → project** — when a quote becomes a
-  project, pre-populate each head's grams from the estimate's colour percentages as
-  a starting figure, so the sliced-grams fields aren't blank before slicing; the
-  operator then overwrites them with the real slicer totals. (The %-split editor
-  itself is already removed from projects.) (Raised 2026-09-10.)
+- ~~**Auto-estimate the colour split on quote → project**~~ — SHIPPED v1.0.60: on
+  save-as-project each head's grams are seeded from the estimate grams × the colour
+  split, marked `estimated` (a banner + the production gate still ask for the real
+  slice); editing a head clears the flag. See IMPLEMENTED.md.
 - **Nozzle size affects print time + a nozzle-change operation** — only when the
   company says it uses more than one nozzle size (a company setting; off by default
   so nobody who runs one nozzle ever sees it). Two parts: (1) confirm/make the

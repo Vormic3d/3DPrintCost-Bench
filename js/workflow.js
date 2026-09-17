@@ -55,7 +55,9 @@ export function postProcessingRequired(project) {
 /** Does the part have real material grams entered (a total, or on any head)? */
 export function partHasSlicerGrams(part) {
   const s = part?.slicer;
-  if (!s) return false;
+  // `estimated` grams are a starting figure seeded from the colour split on
+  // quote→project, not a real slice — they must not satisfy the production gate.
+  if (!s || s.estimated) return false;
   return num(s.grams) > 0 || (Array.isArray(s.heads) && s.heads.some((h) => num(h.grams) > 0));
 }
 

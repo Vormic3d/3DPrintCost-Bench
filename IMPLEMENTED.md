@@ -9,6 +9,19 @@ each cluster lives in `FEATURES.md`. See the `detronics-app` skill's
 _This ledger begins 2026-09-08. Features that shipped before then are recorded in
 `FEATURES.md` and the git history._
 
+## Auto-estimate the colour split on quote → project (v1.0.60)
+
+Saving a multi-colour estimate as a project left the per-head sliced-grams fields blank until slicing.
+Now the save-as-project handler (`js/ui/tools/estimate.js`) seeds them: for a multi-head bed with no real
+slice, each head's grams = the part's estimate grams × quantity × the head's mix fraction
+(`normaliseMix`), stored as `slicer.heads` with `estimated: true`, `minutes: 0`. Verified against the
+real engine: `estimate.grams` 46.2 → 92.3 for qty 2, split 46.2/27.7/18.5 on a 50/30/20 mix.
+
+Kept honest: `partHasSlicerGrams` (`js/workflow.js`) now returns false when `slicer.estimated`, so the
+production gate still demands the real slice; the part editor shows an info banner, and editing any head
+(`slicerFigures` in `js/ui/tools/projects.js`) clears the flag so real figures count. Old parts have no
+flag → treated as real (unchanged). Tests in `tests/workflow.test.js`; How-to FAQ added.
+
 ## Partial-height print failure → real material loss; purge-tower premise closed (v1.0.59)
 
 - **Partial-height failure** (`js/projects.js`, `js/ui/tools/projects.js`): a failed part only used

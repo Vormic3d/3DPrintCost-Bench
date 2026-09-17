@@ -180,6 +180,12 @@ const FAQS = [
   { q: 'If the customer collects, do we still package it?',
     a: 'Yes. Pickup keeps the packaging (it is still boxed for collection) but skips the courier and the Delivery '
       + 'phase. “No packaging required” is the separate option that hands the parts over as they come off the printer.' },
+  { q: 'Why does a new project already show grams per head before I have sliced it?',
+    a: 'When you save a multi-colour estimate as a project, each head’s grams are seeded from the '
+      + 'colour split (the estimate’s total grams shared out by the colour percentages) so the fields '
+      + 'open with a starting figure instead of blank. It is only an estimate — a banner says so, and '
+      + 'the production gate still asks for the real slicer totals. Overwrite each head with the '
+      + 'slicer’s figure once you have sliced it; typing a real value clears the estimate flag.' },
   { q: 'Why did the estimated print time look low against my slicer?',
     a: 'The geometry estimate assumes a share of the machine’s rated flow (Settings → Estimator assumptions), which '
       + 'is optimistic for small detailed parts — lower it to suit. Once sliced, the slicer figure overrides the '

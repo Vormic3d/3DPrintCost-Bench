@@ -279,6 +279,19 @@ test('grams count from a per-head total, not only the flat figure', () => {
   assert.equal(partFullySliced(p), true);
 });
 
+test('a seeded colour-split estimate does not count as a real slice', () => {
+  // Grams present but marked `estimated` (the quote→project seed): the gate must
+  // still ask for the real slice, so grams read as not-yet-sliced.
+  const seeded = makePart({
+    slicer: { grams: 60, minutes: 0, estimated: true, heads: [{ slotId: 's1', grams: 40 }, { slotId: 's2', grams: 20 }] },
+  });
+  assert.equal(partHasSlicerGrams(seeded), false, 'estimated grams are not real');
+  assert.equal(partFullySliced(seeded), false);
+  // Clearing the flag (operator entered a real figure) makes it count.
+  seeded.slicer.estimated = false;
+  assert.equal(partHasSlicerGrams(seeded), true);
+});
+
 test('unslicedParts lists exactly the parts still missing figures', () => {
   let o = addPart(makeProject({ name: 'Job' }), makePart({ name: 'A', slicer: { grams: 10, minutes: 30 } }));
   o = addPart(o, makePart({ name: 'B', slicer: { grams: 0, minutes: 0 } }));

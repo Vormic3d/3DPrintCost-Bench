@@ -924,7 +924,9 @@ function slicerFigures(part, liveSlots, settings, set) {
       grams: s.id === slotId ? Math.max(0, num(grams)) : headGrams(s.id),
     }));
     const total = heads.reduce((t, h) => t + h.grams, 0);
-    set({ slicer: { ...slicer, heads, grams: total } });
+    // The operator is entering a real figure, so this is no longer the seeded
+    // colour-split estimate — clear the flag so it counts as a real slice.
+    set({ slicer: { ...slicer, heads, grams: total, estimated: false } });
   };
 
   const qty = Math.max(1, num(part.quantity, 1));
@@ -961,6 +963,10 @@ function slicerFigures(part, liveSlots, settings, set) {
     muted(`Once you have sliced it, paste the slicer’s TOTALS for the whole print`
       + `${qty > 1 ? ` of all ${qty}` : ''} — the grams off each head and the total print `
       + 'time — not the figure per part. These outrank the app’s own geometry.'),
+    slicer.estimated
+      ? banner('info', 'These per-head grams are a starting estimate from the colour split, not a '
+        + 'real slice. Overwrite each with the slicer’s figure once you have sliced it.')
+      : null,
     ...gramFields,
     el('div', { class: 'field-grid' }, [
       numberField(`part-slicer-h-${part.id}`, 'Print time — hours', timeHrs,

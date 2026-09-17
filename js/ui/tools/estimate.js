@@ -1318,7 +1318,27 @@ function exportSection(ctx) {
           printerId: state.quick.printerId,
           slots: (state.quick.slots || []).map((s) => ({ ...s })),
         });
-        for (const part of state.quick.parts) {
+        const result = price(state);
+        for (const [i, part] of state.quick.parts.entries()) {
+          // Slicer figures for the project part. If the estimate part was actually
+          // sliced, carry those real totals across. Otherwise, for a multi-head bed,
+          // seed each head's grams from the colour split (estimate grams × the head's
+          // share) so the project opens with a starting figure per head, not blank —
+          // marked `estimated` so the production gate still asks for the real slice.
+          const real = totalSlicer(part.slicer, part.quantity);
+          const hasReal = real && (num(real.grams) > 0 || (real.heads || []).some((h) => num(h.grams) > 0));
+          const seedSlots = state.quick.slots || [];
+          const estGrams = num(result.lines[i]?.estimate.grams);
+          let slicer = real;
+          if (!hasReal && seedSlots.length > 1 && estGrams > 0) {
+            const perPrint = estGrams * Math.max(1, num(part.quantity, 1));
+            const entries = normaliseMix(part.mix, seedSlots).entries;
+            const heads = seedSlots.map((s) => {
+              const e = entries.find((x) => x.slotId === s.id);
+              return { slotId: s.id, grams: Number((perPrint * (e?.fraction || 0)).toFixed(1)) };
+            });
+            slicer = { grams: Number(perPrint.toFixed(1)), minutes: 0, heads, estimated: true };
+          }
           project = addPart(project, makePart({
             name: part.name || 'Part',
             quantity: part.quantity,
@@ -1350,9 +1370,9 @@ function exportSection(ctx) {
             partsPerPlateOverride: part.partsPerPlateOverride || 0,
             otherDirectCost: part.otherDirectCost || 0,
             estimateMethod: part.estimateMethod || 'auto',
-            // A project's slicer figures are totals for the whole print; the
-            // estimator's are per part, so scale them up on the way in.
-            slicer: totalSlicer(part.slicer, part.quantity),
+            // A project's slicer figures are totals for the whole print; either the
+            // estimator's real slice (scaled up) or the seeded colour-split estimate.
+            slicer,
             discount: state.quick.discount,
           }));
         }
