@@ -27,6 +27,7 @@ import { fmtMoney, fmtRate, num } from '../../money.js';
 import {
   makeProject, makePart, makeCustomer, addPart, updatePart, removePart, duplicatePart,
   duplicateProject, recordAttempt, removeAttempt, partStats, orderFromProject, logEvent,
+  consumedGrams,
 } from '../../projects.js';
 import {
   workflowState, advance, clientProgressReport, phaseName, PHASES, isInternal, displayPhase,
@@ -706,6 +707,22 @@ function productionPanel(ctx, project, result) {
           commit({ ...project });
           rerender();
         }, { min: 0, step: 1 }),
+      },
+      {
+        // How far the rejected parts got before failing. Setting it rescales the
+        // grams — a part that failed at 55% used only 55% of its filament. Shown
+        // only when there is something rejected to scale.
+        label: 'Failed at %',
+        align: 'right',
+        get: (r) => (r.attempt.rejected > 0
+          ? numberField(`failpct-${r.attempt.id}`, '', num(r.attempt.failPercent, 100), (v) => {
+            const perPart = part.quantity > 0 ? slicerTotals(part, line).grams / part.quantity : 0;
+            r.attempt.failPercent = Math.min(100, Math.max(0, num(v, 100)));
+            r.attempt.grams = Number(consumedGrams(perPart, r.attempt).toFixed(1));
+            commit({ ...project });
+            rerender();
+          }, { min: 0, max: 100, step: 5 })
+          : muted('—')),
       },
       {
         label: 'Minutes',

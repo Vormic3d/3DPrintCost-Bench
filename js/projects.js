@@ -462,6 +462,10 @@ export function makeAttempt(spec = {}) {
     quantity: 1,
     accepted: 1,
     rejected: 0,
+    // How far the rejected parts got before failing, as a percentage of the print
+    // (100 = they printed in full, e.g. a warp caught only at the end). Only the
+    // rejected parts are scaled by this; accepted parts always used their full grams.
+    failPercent: 100,
     minutes: 0,
     grams: 0,
     failed: false,
@@ -476,6 +480,20 @@ export function makeAttempt(spec = {}) {
     notes: '',
     ...spec,
   };
+}
+
+/**
+ * Filament a plate actually consumed: accepted parts in full, rejected parts only
+ * as far up as they printed. `perPartGrams` is one part's full-print grams; a part
+ * that failed at 55% used 0.55 of that. Assumes the parts on the plate are alike,
+ * which is true for a plate of one part number.
+ */
+export function consumedGrams(perPartGrams, { accepted = 0, rejected = 0, failPercent = 100 } = {}) {
+  const g = Math.max(0, num(perPartGrams));
+  const done = Math.max(0, num(accepted));
+  const bad = Math.max(0, num(rejected));
+  const frac = Math.min(1, Math.max(0, num(failPercent, 100) / 100));
+  return g * (done + bad * frac);
 }
 
 export function recordAttempt(project, partId, attempt) {

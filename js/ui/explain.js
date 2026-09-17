@@ -91,7 +91,10 @@ export function explainLine(line, result, settings) {
       + 'the model and only the slicer knows it.',
     correction: 'The figure is the app’s best estimate from its ranked sources, and the '
       + 'label above names which one it used. It is honest about being an estimate — paste '
-      + 'the slicer’s grams and minutes in and that, marked Slicer, is what the price uses.',
+      + 'the slicer’s grams and minutes in and that, marked Slicer, is what the price uses. '
+      + 'Note the purge tower is not charged as a solid block: the plastic here is the purge '
+      + 'itself (the tower is only the shape it takes, and it is costed for the plate space it '
+      + 'uses). Tune the purge per change in Settings → Estimator assumptions if it reads high.',
   }));
 
   if (e.timeParts?.timeAdjust && e.timeParts.timeAdjust.parts.length) {

@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  makeProject, makePart, makeCustomer, addPart, updatePart, removePart,
+  makeProject, makePart, makeAttempt, makeCustomer, addPart, updatePart, removePart,
   duplicatePart, duplicateProject, nextRevision, setStatus, archiveProject,
-  recordAttempt, removeAttempt, partStats, projectStats, migrateProject, orderFromProject,
+  recordAttempt, removeAttempt, partStats, projectStats, migrateProject, orderFromProject, consumedGrams,
   PROJECT_STATUSES, statusOf, statusFromPhase, phaseFromStatus,
 } from '../js/projects.js';
 import {
@@ -773,6 +773,22 @@ test('imported history feeds machine hours, filament and CTC, but not current pr
   close(withPrior.money.costToCompany, base.money.costToCompany + priorRunCost(priorRuns[0], settings),
     1e-9, 'the estimated history cost lands in CTC');
   close(withPrior.money.profit, base.money.profit, 1e-9, 'history earned no revenue, so profit is unchanged');
+});
+
+test('a partial failure consumes only the filament that printed', () => {
+  const perPart = 10; // one part's full-print grams
+  // 1 good + 1 that failed at 55%: 10 + 10*0.55 = 15.5, not the full 20.
+  close(consumedGrams(perPart, { accepted: 1, rejected: 1, failPercent: 55 }), 15.5, 1e-9, 'partial');
+  // A full-height fail (or none set) still charges both parts in full.
+  close(consumedGrams(perPart, { accepted: 1, rejected: 1, failPercent: 100 }), 20, 1e-9, 'full fail');
+  close(consumedGrams(perPart, { accepted: 1, rejected: 1 }), 20, 1e-9, 'defaults to 100');
+  // Accepted parts are never scaled by the fail percent.
+  close(consumedGrams(perPart, { accepted: 2, rejected: 0, failPercent: 10 }), 20, 1e-9, 'accepted full');
+  // Migration: an old attempt with no failPercent defaults to 100 (unchanged behaviour).
+  const old = { ...makeAttempt(), quantity: 2, accepted: 1, rejected: 1, grams: 20 };
+  delete old.failPercent;
+  const migrated = migrateProject({ version: 3, parts: [{ ...makePart(), attempts: [old] }] }).parts[0].attempts[0];
+  assert.equal(migrated.failPercent, 100, 'restored to 100');
 });
 
 test('committed load counts accepted work only, never open quotes', () => {

@@ -9,6 +9,22 @@ each cluster lives in `FEATURES.md`. See the `detronics-app` skill's
 _This ledger begins 2026-09-08. Features that shipped before then are recorded in
 `FEATURES.md` and the git history._
 
+## Partial-height print failure → real material loss; purge-tower premise closed (v1.0.59)
+
+- **Partial-height failure** (`js/projects.js`, `js/ui/tools/projects.js`): a failed part only used
+  the filament it printed before failing, not the whole print's grams. New pure `consumedGrams(perPartGrams,
+  {accepted, rejected, failPercent})` = perPart × (accepted + rejected × failPercent/100). Attempts gain a
+  `failPercent` (default 100; old attempts migrate to 100 via `makePart`/`makeAttempt` spread — behaviour
+  unchanged). The production table gains a **"Failed at %"** cell, shown only when `rejected > 0`; setting it
+  rescales that attempt's grams from the sliced per-part figure (`slicerTotals`), which flows to `actualGrams`,
+  scrap and the stock draw. Grams stays hand-editable. Tests in `tests/records.test.js` (15.5 for 1 good + 1
+  failed-at-55%, full at 100, accepted never scaled, migration default).
+- **Purge-tower infill** — investigated and closed, no material change. The tower is already NOT charged as a
+  solid block: `js/filaments.js` comments and `js/engine.js` show the tower's volume is used only for plate
+  SPACE (`tower.area`), while the plastic charged is the real purge volume (`purgePerChangeMm3` → grams). Added
+  a clarifying line to the Expert grams "how this works" note (`js/ui/explain.js`); the real knob for an
+  overstated purge is `purgePerChangeMm3` in Settings.
+
 ## Coffee icon: saucer + steam lines added (v1.0.58)
 
 Extended the side-view cup (`js/main.js`) with a saucer beneath (`M4 19.5 Q 11 21.8 18 19.5`) and

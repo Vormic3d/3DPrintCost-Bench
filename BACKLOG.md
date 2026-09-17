@@ -18,17 +18,10 @@ settings, nav and the smaller polish. Say the word to re-rank.
 
 **Bugs** — all cleared; see IMPLEMENTED.md (v1.0.52–v1.0.54).
 
-**Features** — compile-email + checklist + big-file guidance shipped v1.0.55 (IMPLEMENTED.md). Remaining:
-
-- **Failed print: partial-height failure → real material loss** — when logging a failed print,
-  besides accepted/rejected counts, capture WHERE the rejected part(s) failed — as a % of the
-  print, or a Z height (e.g. "failed at 55%"). Then compute the material actually consumed on the
-  failed parts (only up to that height/percentage), instead of assuming the full print's grams.
-  Per rejected part: its failure %/height. E.g. qty 2, 1 accepted + 1 rejected — ask the rejected
-  one's failure %. Feeds the scrap/material-loss figure honestly.
-- **Purge tower infill** — decide whether the purge tower is costed as a solid block of material
-  or at an infill % (it's mostly hollow, ~15% infill). Currently likely treated as solid; add an
-  infill assumption for the tower's material so its grams aren't overstated.
+**Features** — all cleared. Compile-email + checklist + big-file guidance shipped v1.0.55;
+partial-height failure → real material loss shipped v1.0.59; purge-tower infill investigated and
+closed (the tower is already costed as SPACE, not material — the plastic charged is the real purge
+volume; v1.0.59 adds a clarifying Expert note). See IMPLEMENTED.md.
 
 ## Pricing model: clarity and correctness
 
