@@ -296,6 +296,18 @@ function partBlock(ctx, part, index, canRemove, open = true) {
       selectField(`layer-height-${key}`, FACTOR_LABELS.layerHeight,
         [0.08, 0.1, 0.12, 0.15, 0.16, 0.2, 0.24, 0.28, 0.3].map((h) => ({ value: String(h), label: `${h} mm` })),
         String(merged.layerHeight), (v) => setOverride('layerHeight')(Number(v))),
+      // Nozzle only when the company runs more than one size. A bigger nozzle means
+      // thicker, stronger walls and more material, and allows a taller layer.
+      state.settings.nozzle?.enabled
+        ? selectField(`nozzle-${key}`, 'Nozzle',
+          (state.settings.nozzle.sizes || [0.4]).map((n) => ({
+            value: String(n),
+            label: `${n} mm${n === num(state.settings.nozzle.default, 0.4) ? ' (default)' : ''}`,
+          })),
+          String(num(merged.nozzle, num(state.settings.nozzle.default, 0.4))),
+          (v) => setOverride('nozzle')(Number(v)),
+          { hint: 'A non-default nozzle books a swap (there and back) as labour.' })
+        : null,
       checkField(`shrinkage-${key}`, FACTOR_LABELS.shrinkage, merged.shrinkage, setOverride('shrinkage')),
       checkField(`angle-opt-${key}`, FACTOR_LABELS.angleOptimisation, merged.angleOptimisation, setOverride('angleOptimisation')),
       checkField(`ironing-${key}`, FACTOR_LABELS.ironing, merged.ironing, setOverride('ironing')),

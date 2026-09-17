@@ -186,6 +186,14 @@ const FAQS = [
       + 'open with a starting figure instead of blank. It is only an estimate — a banner says so, and '
       + 'the production gate still asks for the real slicer totals. Overwrite each head with the '
       + 'slicer’s figure once you have sliced it; typing a real value clears the estimate flag.' },
+  { q: 'How do I price for different nozzle sizes?',
+    a: 'Turn on Settings → Estimator → Nozzles (off by default, so a single-nozzle shop never sees it). '
+      + 'Set your sizes, the default (the machine’s usual), the change time and the max layer per nozzle. '
+      + 'Then each part gets a Nozzle choice in its advanced settings. A bigger nozzle lays wider lines, '
+      + 'so at the same wall count the walls are thicker and stronger and use more material — that raises '
+      + 'the material cost. It also allows a taller layer, which is the ONLY way it prints faster (and a '
+      + 'taller layer lowers the finish/aesthetics). Choosing a non-default nozzle books a swap, there and '
+      + 'back, as labour on that part. If a part’s layer height is taller than its nozzle can lay, you get a warning.' },
   { q: 'Why did the estimated print time look low against my slicer?',
     a: 'The geometry estimate assumes a share of the machine’s rated flow (Settings → Estimator assumptions), which '
       + 'is optimistic for small detailed parts — lower it to suit. Once sliced, the slicer figure overrides the '

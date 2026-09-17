@@ -1118,6 +1118,16 @@ function partSettingOverrides(part, settings, set) {
     selectField(`part-layer-height-${part.id}`, FACTOR_LABELS.layerHeight,
       [0.08, 0.1, 0.12, 0.15, 0.16, 0.2, 0.24, 0.28, 0.3].map((h) => ({ value: String(h), label: `${h} mm` })),
       String(merged.layerHeight), (v) => setOverride('layerHeight')(Number(v))),
+    settings.nozzle?.enabled
+      ? selectField(`part-nozzle-${part.id}`, 'Nozzle',
+        (settings.nozzle.sizes || [0.4]).map((n) => ({
+          value: String(n),
+          label: `${n} mm${n === num(settings.nozzle.default, 0.4) ? ' (default)' : ''}`,
+        })),
+        String(num(merged.nozzle, num(settings.nozzle.default, 0.4))),
+        (v) => setOverride('nozzle')(Number(v)),
+        { hint: 'A non-default nozzle books a swap (there and back) as labour.' })
+      : null,
     checkField(`part-shrinkage-${part.id}`, FACTOR_LABELS.shrinkage, merged.shrinkage, setOverride('shrinkage')),
     checkField(`part-angle-opt-${part.id}`, FACTOR_LABELS.angleOptimisation, merged.angleOptimisation, setOverride('angleOptimisation')),
     checkField(`part-ironing-${part.id}`, FACTOR_LABELS.ironing, merged.ironing, setOverride('ironing')),

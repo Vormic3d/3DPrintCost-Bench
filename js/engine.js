@@ -269,6 +269,28 @@ export function calculateLine(line, settings, context = {}) {
 
   /* -- estimate ---------------------------------------------------------- */
 
+  // Multi-nozzle (off by default): a bigger nozzle widens the extrusion — thicker,
+  // stronger walls and more material — and permits a taller layer, which is the only
+  // way it prints faster (the operator raises the layer; the model already turns
+  // that into fewer layers). Single-nozzle shops keep the global assumption exactly.
+  const nozzleCfg = settings.nozzle || {};
+  const multiNozzle = !!nozzleCfg.enabled;
+  const baseNozzle = num(settings.estimate?.assumptions?.nozzle, 0.4);
+  const machineNozzle = multiNozzle ? num(nozzleCfg.default, baseNozzle) : baseNozzle;
+  const partNozzle = multiNozzle ? num(printSettings.nozzle, machineNozzle) : baseNozzle;
+  const estimateAssumptions = multiNozzle
+    ? { ...settings.estimate?.assumptions, nozzle: partNozzle }
+    : settings.estimate?.assumptions;
+  if (multiNozzle) {
+    const maxLayer = partNozzle * Math.max(0.1, num(nozzleCfg.maxLayerRatio, 0.6));
+    if (num(printSettings.layerHeight, 0.2) > maxLayer + 1e-9) {
+      notes.push(note('warn',
+        `A ${partNozzle} mm nozzle lays layers up to about ${maxLayer.toFixed(2)} mm, but this part `
+        + `is set to ${num(printSettings.layerHeight, 0.2)} mm. Lower the layer height, or fit a bigger nozzle.`,
+        'nozzle-layer'));
+    }
+  }
+
   const estimate = estimatePart({
     geometry,
     profile: { ...profile, settings: printSettings },
@@ -291,7 +313,7 @@ export function calculateLine(line, settings, context = {}) {
     calibration: context.calibration || null,
     method: line.estimateMethod || settings.estimate?.method || 'auto',
     model: settings.factorModel,
-    assumptions: settings.estimate?.assumptions,
+    assumptions: estimateAssumptions,
     partsPerPlate: perPlate,
     jobsOverride: bedPlacement ? bedPlacement.jobs : null,
   });
@@ -401,6 +423,15 @@ export function calculateLine(line, settings, context = {}) {
     rate: labourRate,
   });
 
+  // A part needing a nozzle other than the machine's default is a manual swap
+  // there and back — labour, once for the whole run of this part, so amortised
+  // across its quantity. ponytail: per-part, so a batch of different parts all on
+  // the same non-default nozzle over-counts the swap; refine if that case matters.
+  const needsNozzleChange = multiNozzle && Math.abs(partNozzle - machineNozzle) > 1e-9;
+  const nozzleChangeCost = needsNozzleChange
+    ? (2 * Math.max(0, num(nozzleCfg.changeMinutes, 5)) * (labourRate / 60)) / quantity
+    : 0;
+
   /* -- where labour is recovered ----------------------------------------- */
 
   // Labour either sits inside the Cost to Company and is multiplied with it, or
@@ -419,7 +450,7 @@ export function calculateLine(line, settings, context = {}) {
   // Internal drops the labour-based finishing (post-processing and manual swaps),
   // keeping only the physical costs and the after-print components themselves.
   const direct = atRisk + (labourInCtc ? labourSafe : 0)
-    + (internal ? 0 : postProcess.cost + swap.labourCost)
+    + (internal ? 0 : postProcess.cost + swap.labourCost + nozzleChangeCost)
     + hardware.afterCost;
 
   /* -- scrap ------------------------------------------------------------- */

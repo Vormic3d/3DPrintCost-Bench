@@ -1055,6 +1055,44 @@ function estimatorPanel(ctx) {
     ]),
 
     el('div', { class: 'panel' }, [
+      el('h3', { text: 'Nozzles' }),
+      muted('Turn this on only if the workshop runs more than one nozzle size. Off, nobody '
+        + 'sees a nozzle choice and estimates are unchanged. On, a part can be set to a '
+        + 'different nozzle: a bigger one lays wider lines — thicker, stronger walls and more '
+        + 'material — and allows a taller layer (the only way it prints faster). Swapping to a '
+        + 'non-default nozzle is booked as labour, both ways.'),
+      checkField('nozzle-enabled', 'We use more than one nozzle size', !!settings.nozzle?.enabled,
+        (v) => { settings.nozzle = { ...(settings.nozzle || {}), enabled: v }; touch(rerender); }),
+      settings.nozzle?.enabled
+        ? el('div', {}, [
+          textField('nozzle-sizes', 'Nozzle sizes we have (mm, comma-separated)',
+            (settings.nozzle.sizes || []).join(', '), (v) => {
+              const sizes = String(v).split(',').map((s) => num(s)).filter((n) => n > 0);
+              settings.nozzle.sizes = sizes.length ? sizes : [0.4];
+              touch(rerender);
+            }),
+          el('div', { class: 'field-grid' }, [
+            selectField('nozzle-default', 'Default nozzle (the machine’s usual)',
+              (settings.nozzle.sizes || [0.4]).map((n) => ({ value: String(n), label: `${n} mm` })),
+              String(num(settings.nozzle.default, 0.4)),
+              (v) => { settings.nozzle.default = num(v); touch(rerender); }),
+            numberField('nozzle-change-min', 'Nozzle change (each way)',
+              num(settings.nozzle.changeMinutes, 5),
+              (v) => { settings.nozzle.changeMinutes = Math.max(0, num(v)); touch(rerender); },
+              { min: 0, step: 1, suffix: 'min' }),
+          ]),
+          sliderField('nozzle-max-layer', 'Max layer as a fraction of the nozzle',
+            num(settings.nozzle.maxLayerRatio, 0.6),
+            (v) => { settings.nozzle.maxLayerRatio = Math.max(0.1, num(v)); touch(rerender); }, {
+              min: 0.3, max: 0.9, step: 0.05, format: (v) => fmtRate(v),
+              info: 'A nozzle lays a layer up to about this share of its diameter — 0.6 tops a '
+                + '0.4 mm nozzle near 0.24 mm and a 0.6 mm near 0.36 mm. A part set higher is flagged.',
+            }),
+        ])
+        : null,
+    ].filter(Boolean)),
+
+    el('div', { class: 'panel' }, [
       el('h3', { text: 'Start again' }),
       muted('This resets every setting on this page to the shipped defaults. Projects, '
         + 'customers and stock are left alone.'),

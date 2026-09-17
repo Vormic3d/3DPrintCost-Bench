@@ -849,3 +849,43 @@ test('the legacy needsSupport flag still reads as the support operation', () => 
   const r = calculateOrder({ lines: [{ ...bracket(), quantity: 2, needsSupport: true }] }, s);
   assert.ok(r.lines[0].detail.postProcess.applied.some((a) => a.id === 'remove-support'));
 });
+
+/* --------------------------------------------------------------- nozzles -- */
+
+test('multi-nozzle off: a per-part nozzle override is ignored', () => {
+  const s = settings(); // nozzle.enabled defaults to false
+  const base = calculateLine({ ...bracket(), settingOverrides: {} }, s, {});
+  const over = calculateLine({ ...bracket(), settingOverrides: { nozzle: 0.8 } }, s, {});
+  assert.equal(over.estimate.grams, base.estimate.grams, 'the override does nothing while off');
+});
+
+test('a bigger nozzle lays thicker walls, so it uses more plastic', () => {
+  const s = settings();
+  s.nozzle = { ...s.nozzle, enabled: true, default: 0.4, sizes: [0.4, 0.8] };
+  const small = calculateLine({ ...bracket(), settingOverrides: { nozzle: 0.4, wallLoops: 3 } }, s, {});
+  const big = calculateLine({ ...bracket(), settingOverrides: { nozzle: 0.8, wallLoops: 3 } }, s, {});
+  assert.ok(big.estimate.grams > small.estimate.grams, 'wider lines at the same wall count = more grams');
+});
+
+test('a non-default nozzle books swap labour, amortised across the run', () => {
+  const s = settings();
+  s.nozzle = { ...s.nozzle, enabled: true, default: 0.4, changeMinutes: 0 };
+  const line = { ...bracket(), quantity: 4, settingOverrides: { nozzle: 0.6 } };
+  const noSwap = calculateLine(line, s, {});
+  s.nozzle.changeMinutes = 30;
+  const withSwap = calculateLine(line, s, {});
+  assert.ok(withSwap.production.direct > noSwap.production.direct, 'the swap adds labour');
+  // Same nozzle as the default → no swap even with a big change time.
+  const atDefault = calculateLine({ ...bracket(), quantity: 4, settingOverrides: { nozzle: 0.4 } }, s, {});
+  const atDefaultZero = (() => { const s2 = settings(); s2.nozzle = { ...s2.nozzle, enabled: true, default: 0.4, changeMinutes: 0 }; return calculateLine({ ...bracket(), quantity: 4, settingOverrides: { nozzle: 0.4 } }, s2, {}); })();
+  assert.ok(Math.abs(atDefault.production.direct - atDefaultZero.production.direct) < 1e-9, 'no swap at the default nozzle');
+});
+
+test('a layer taller than the nozzle allows is flagged', () => {
+  const s = settings();
+  s.nozzle = { ...s.nozzle, enabled: true, default: 0.4, maxLayerRatio: 0.6 };
+  const tall = calculateLine({ ...bracket(), settingOverrides: { nozzle: 0.4, layerHeight: 0.3 } }, s, {});
+  assert.ok(tall.notes.some((n) => n.id === 'nozzle-layer'), 'flagged when 0.3 > 0.4×0.6');
+  const okLayer = calculateLine({ ...bracket(), settingOverrides: { nozzle: 0.4, layerHeight: 0.2 } }, s, {});
+  assert.ok(!okLayer.notes.some((n) => n.id === 'nozzle-layer'), 'no flag when the layer fits');
+});

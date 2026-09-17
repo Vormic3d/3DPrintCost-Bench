@@ -53,16 +53,14 @@ in v1.0.5. Remaining:_
   save-as-project each head's grams are seeded from the estimate grams × the colour
   split, marked `estimated` (a banner + the production gate still ask for the real
   slice); editing a head clears the flag. See IMPLEMENTED.md.
-- **Nozzle size affects print time + a nozzle-change operation** — only when the
-  company says it uses more than one nozzle size (a company setting; off by default
-  so nobody who runs one nozzle ever sees it). Two parts: (1) confirm/make the
-  time-per-print respond to the chosen nozzle size — a larger nozzle lays down more
-  per pass (faster), a smaller one is slower and finer — so the estimate reflects
-  it; check the current model actually does this. (2) When a part needs a nozzle
-  other than the machine's current/default one, book a **nozzle-change operation
-  both ways** — swap to the needed nozzle before, and back to the default after —
-  as a labour/time operation (like the post-processing steps). Per-part nozzle
-  choice would live with the other advanced print settings. (Raised 2026-09-08.)
+- ~~**Nozzle size affects print time + a nozzle-change operation**~~ — SHIPPED v1.0.61.
+  Company setting `nozzle` (off by default). Per-part nozzle in advanced settings on the
+  estimate and project. Finding on part (1): a bigger nozzle does NOT print faster at the
+  same layer height — it lays wider lines (thicker/stronger walls + more material) and
+  *allows* a taller layer, which is the only speed gain (and lowers the finish; aesthetics
+  already track layer height in `scores.js`, so no profile changes needed). Part (2): a
+  non-default nozzle books a swap-both-ways labour, amortised across the run. Layer taller
+  than the nozzle allows is flagged. See IMPLEMENTED.md.
 
 ## The three estimate surfaces — one clear step-by-step flow
 

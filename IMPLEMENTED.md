@@ -9,6 +9,25 @@ each cluster lives in `FEATURES.md`. See the `detronics-app` skill's
 _This ledger begins 2026-09-08. Features that shipped before then are recorded in
 `FEATURES.md` and the git history._
 
+## Per-part nozzle size + nozzle-change labour (v1.0.61)
+
+New company setting `settings.nozzle` (`{ enabled:false, sizes, default, changeMinutes, maxLayerRatio }`,
+`js/settings.js`; `mergeInto` fills it for stored settings, no migration). **Off by default → existing
+quotes unchanged.** When enabled, a part carries a nozzle in `settingOverrides.nozzle`, chosen in the
+advanced print settings on both the estimate (`js/ui/tools/estimate.js`) and the project
+(`js/ui/tools/projects.js`); Settings → Estimator gains a Nozzles panel.
+
+Physics (per the owner): a bigger nozzle does NOT print faster at the same layer height. In the engine
+(`js/engine.js`) the per-part nozzle feeds the estimate `assumptions.nozzle` → line width → wall thickness,
+so at the same wall count a bigger nozzle means **thicker, stronger walls and more material** (and a bit
+more extrude time). The only speed gain is a **taller layer**, which a bigger nozzle permits — the existing
+layer-height time term already turns that into fewer layers, and `scores.js` already lowers aesthetics/precision
+as the layer grows (so no profile edits were needed). A part whose layer height exceeds `nozzle × maxLayerRatio`
+is flagged. A part on a non-default nozzle books a **swap there-and-back labour** (`2 × changeMinutes`,
+amortised across the part's quantity), added to `direct` like the colour-swap cost; ponytail-noted that it is
+per-part. Tests in `tests/engine.test.js` (off = ignored, bigger = more grams, non-default = swap labour,
+tall layer = flagged); How-to FAQ added.
+
 ## Auto-estimate the colour split on quote → project (v1.0.60)
 
 Saving a multi-colour estimate as a project left the per-head sliced-grams fields blank until slicing.

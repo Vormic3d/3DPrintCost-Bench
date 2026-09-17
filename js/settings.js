@@ -103,6 +103,22 @@ export function defaultSettings() {
       swapWaitMinutes: 20,
     },
 
+    // More than one nozzle size in the workshop. OFF by default: a single-nozzle
+    // shop never sees any nozzle UI and nothing about its estimates changes. When
+    // on, a part can be printed on a different nozzle — a bigger one lays wider
+    // lines (thicker, stronger walls, more material) and allows a taller layer
+    // (the only way it prints faster); swapping to a non-default nozzle is manual
+    // labour, booked both ways.
+    nozzle: {
+      enabled: false,
+      sizes: [0.4, 0.6, 0.8],
+      default: 0.4,
+      changeMinutes: 5,
+      // Biggest layer a nozzle can lay down, as a fraction of its diameter
+      // (0.4 → ~0.24 mm, 0.6 → ~0.36 mm). Tune to your machines.
+      maxLayerRatio: 0.6,
+    },
+
     labour: {
       // How the hourly rate is arrived at:
       //   'direct'  rate is typed in below; 0 means "use the country default".
