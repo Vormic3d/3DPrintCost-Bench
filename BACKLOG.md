@@ -25,24 +25,17 @@ volume; v1.0.59 adds a clarifying Expert note). See IMPLEMENTED.md.
 
 ## Pricing model: clarity and correctness
 
-_The confusion here touches every quote, so it ranks high. Display + internal-
-company allowances shipped in v1.0.4; the deeper re-model below needs sign-off
-because it changes the actual price._
-
-- **Commercial-share panel → full-invoice categories that reconcile top-to-bottom**
-  — the general-allowance redefinition shipped (option A, v1.0.6: the allowance is
-  now the sum of marketing + admin + R&D + storage). What remains is the panel/
-  invoice reconciliation:
-  - _Categories capture the full invoice._ Every rand of the invoice falls into a
-    category. The ones calculated their own way (machine, labour, rejections/scrap,
-    profit, packaging, handling) show their **actual computed** rand/share of the
-    invoice — not a fixed weight — and the un-accounted four read from the general-
-    allowance components now that those are real numbers.
-  - _Top and bottom must agree._ The "where the commercial share goes" panel must
-    reconcile to the money diagram at the top of the page. (Packaging example: 10%
-    notional but a R90 packaging on a R90 part is 50% of that order — categories
-    are where the money *actually* goes on the invoice, from the real amount.)
-  (Raised 2026-09-10; display shipped v1.0.4; general allowance shipped v1.0.6.)
+- ~~**Commercial-share panel → full-invoice categories that reconcile top-to-bottom**~~
+  — DONE (weight→percent commercial-categories model). `commercialAdjustment`
+  (`js/pricing.js`) prices each category from its **actual computed base** in
+  `categoryBases` (`js/engine.js`: material, machine, electricity, labour, hardware,
+  scrap, packaging=real cost, shipping, handling, profit, growth, and marketing/admin/
+  R&D/storage from the real general-allowance components). The company sets a
+  **percentage per category** (100% as-is, 110% adds 10%, 90% removes 10%); a custom
+  category with no source adds a **percentage of the whole order's total**. The
+  categories are the invoice's real components, so the panel reconciles to the money
+  diagram — the old "packaging 10% notional vs R90 real" complaint is gone.
+  (Raised 2026-09-10; display v1.0.4; general allowance v1.0.6; percent model closed this.)
 
 ## Project page & project part editor
 
