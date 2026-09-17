@@ -57,38 +57,24 @@ in v1.0.5. Remaining:_
 
 ## The three estimate surfaces — one clear step-by-step flow
 
-_Estimate tool, client request form, and a new internal-employee form should all
-share the same top-to-bottom, decision-ordered layout. One big cluster._
+_Substantially DONE. The client request form (`js/ui/portal.js`) is a numbered,
+decision-ordered stepper, and it doubles as the internal-employee form via
+`portalConfig(settings, { internal:true })` (priced at cost, no buffer/expedite).
+The estimate tool remains the operator's power surface — an ordered, collapsible
+sidebar in the same decision order, not a numbered stepper. Details:_
 
-- **Decision-ordered, no-scroll-back flow** — reorder all three surfaces so the
-  user starts at the top and only ever scrolls **down**, following clear steps,
-  never scrolling up to make a decision that changes what's above. The step order:
-  1. Multicolour / multi-material? (what colours the part needs, up front)
-  2. Printer (default set by the company)
-  3. Heads / rolls of filament to work with
-  4. Model — upload, then part size / dimensions and quantity
-  5. Print intent + the colour percentages/assignments
-  6. Extra components (hardware)
-  7. Post-processing
-  8. **Specific inspections** — shown only when a particular print intent is chosen
-  9. Delivery — "how would I get the part?"
-  10. Packaging
-  11. Export / submit
-  Make the steps visually clear (almost a stepper). (Raised 2026-09-10.)
-- **Auto-minimise sibling dropdowns/sections** — when one section (printer, model,
-  …) is expanded, automatically collapse the others, so the flow stays a single
-  focused column. Wants A/B testing of whether it helps. (Raised 2026-09-10.)
-- **Colour-change-by-height in all three surfaces** — the per-layer colour-change
-  handling must be available on the estimate, the client form, and the employee
-  form (and the project part editor, above). (Raised 2026-09-10.)
-- **Internal-employee estimate form** — a client-form variant for internal
-  employees (costed, still quoted+paid per existing order-type rules), sharing the
-  same stepped flow. (Raised 2026-09-10.)
-- **Auto-email the estimate/request** — a button at the end that opens the user's
-  email client with a pre-filled message (a `mailto:` with subject + body): "Hi, I
-  want this printed", a reminder to attach any images / technical drawings, and to
-  attach the `.3mf` / `.obj` / `.stl`. Recipient = the company email already set in
-  Settings. One button, proper heading, ready to send. (Raised 2026-09-10.)
+- ~~**Decision-ordered, no-scroll-back flow**~~ — DONE on the client/employee form
+  (stepped top-to-bottom). The estimate tool keeps its sidebar in the same order
+  (printer/filament → model/parts → order → pricing → export).
+- ~~**Internal-employee estimate form**~~ — DONE: the portal's `internal` mode.
+- ~~**Auto-email the estimate/request**~~ — DONE v1.0.55 (compile-email on the form).
+- ~~**Colour-change-by-height in all surfaces**~~ — on the estimate and project (the
+  operator surfaces); deliberately NOT on the client form, which stays minimal
+  (see the "client form minimal" principle). Considered done.
+- **Auto-minimise sibling sections (estimate tool only, optional)** — the `section()`
+  `group` mechanism already collapses siblings; the estimate's sidebar sections are
+  not yet grouped. Small, but wants A/B testing before turning on, so left as an
+  opt-in refinement. (Raised 2026-09-10.)
 
 ## Inventory & stock movements
 
