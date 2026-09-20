@@ -16,7 +16,7 @@
  * cannot disagree about what a machine can do.
  */
 
-import { el } from './dom.js';
+import { el, swatch } from './dom.js';
 import {
   section, subsection, numberField, selectField, button, buttonRow, banner, muted, pill, table,
 } from './controls.js';
@@ -27,7 +27,7 @@ import {
   rebalanceMix,
 } from '../filaments.js';
 import {
-  findMaterial, materialLabel, materialType, coloursForType, findByTypeAndColour,
+  findMaterial, materialLabel, materialType, coloursForType, findByTypeAndColour, colourHex,
 } from '../materials.js';
 import { fmtMoney, num } from '../money.js';
 
@@ -112,6 +112,7 @@ export function filamentSlots({
       const material = findMaterial(materials, slot.materialId);
       return el('div', { class: 'slot-row' }, [
         el('span', { class: 'slot-row__index', text: String(i + 1) }),
+        swatch(colourHex(material), { title: material?.colour }),
         selectField(`${keyPrefix}-slot-${i}-colour`, `Slot ${i + 1}`,
           colours.map((c) => ({ value: c, label: c })),
           material?.colour,

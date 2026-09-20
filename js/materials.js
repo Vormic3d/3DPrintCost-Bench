@@ -40,6 +40,23 @@ export function materialType(id) {
     || MATERIAL_TYPES.find((m) => m.id === 'PLA');
 }
 
+/** A hex for each common colour name, so a swatch shows with no per-material setup.
+ *  A material can override with its own `colourHex`. Approximate on purpose —
+ *  "Natural" and "Clear" are translucent, shown as a pale stand-in. */
+export const COLOUR_HEX = {
+  black: '#1c1c1c', white: '#f5f5f5', 'dark grey': '#4a4f55', grey: '#8a9099',
+  'light grey': '#c2c7cd', red: '#cc2229', blue: '#2f6ec4', green: '#2e9e4f',
+  yellow: '#f2c437', orange: '#e8802b', natural: '#e8dcc0', clear: '#dfe7ee',
+};
+
+/** The swatch colour for a material: its own `colourHex`, else a guess from the
+ *  colour name, else null (show no swatch). */
+export function colourHex(material) {
+  if (!material) return null;
+  if (material.colourHex) return String(material.colourHex);
+  return COLOUR_HEX[String(material.colour || '').trim().toLowerCase()] || null;
+}
+
 /**
  * The colours the shipped catalogue stocks, per type.
  *

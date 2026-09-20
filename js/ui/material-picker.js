@@ -8,11 +8,11 @@
  * silent substitution this app exists to avoid.
  */
 
-import { el } from './dom.js';
+import { el, swatch } from './dom.js';
 import { selectField, banner, button, buttonRow, muted } from './controls.js';
 import {
   MATERIAL_TYPES, typesInStock, coloursForType, findByTypeAndColour, findMaterial,
-  materialType, makeSpoolEntry, pricePerGram, materialLabel, spoolId,
+  materialType, makeSpoolEntry, pricePerGram, materialLabel, spoolId, colourHex,
 } from '../materials.js';
 import { fmtMoney } from '../money.js';
 
@@ -85,6 +85,14 @@ export function materialPicker({
         colour, changeColour, { disabled: colours.length === 0 }),
     ]),
   ];
+
+  // A swatch of the chosen colour, so the pick is visible at a glance.
+  if (colour && colourHex(current)) {
+    nodes.push(el('div', { class: 'btn-row' }, [
+      swatch(colourHex(current), { title: colour }),
+      muted(colour),
+    ]));
+  }
 
   if (showDetail) {
     const spec = materialType(type);

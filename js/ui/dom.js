@@ -9,6 +9,13 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  *                         `dataset`, plus any attribute name
  * @param {Array<Node|string|null|undefined>} [children]
  */
+/** A small colour square for a filament colour. `hex` null/empty → nothing, so a
+ *  caller can drop it inline next to a colour name without guarding. */
+export function swatch(hex, { title = '' } = {}) {
+  if (!hex) return null;
+  return el('span', { class: 'swatch', style: { background: String(hex) }, title, 'aria-hidden': 'true' });
+}
+
 export function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
   applyAttrs(node, attrs);

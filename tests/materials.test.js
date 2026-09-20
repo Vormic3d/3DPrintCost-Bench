@@ -13,7 +13,7 @@ import {
   DEFAULT_MATERIALS, MATERIAL_TYPES, spoolId, makeSpoolEntry, typesInStock,
   coloursForType, colourNames, findByTypeAndColour, resolveSpool, findMaterial,
   materialType, materialsOfType, materialLabel, pricePerGram, spoolPrice, gramsFor,
-  density, live,
+  density, live, colourHex,
 } from '../js/materials.js';
 import { defaultSettings } from '../js/settings.js';
 import { calculateOrder } from '../js/engine.js';
@@ -255,4 +255,14 @@ test('helpers used by the catalogue screen still behave', () => {
   assert.ok(materialsOfType(DEFAULT_MATERIALS, 'PLA').every((m) => m.type === 'PLA'));
   assert.equal(materialType('nope').id, 'PLA', 'an unknown plastic falls back by name');
   assert.equal(materialLabel(null), '—');
+});
+
+test('colourHex: own hex wins, else the name maps, else null', () => {
+  assert.equal(colourHex({ colour: 'Red' }), '#cc2229', 'known name maps');
+  assert.equal(colourHex({ colour: 'dark grey' }), '#4a4f55', 'case-insensitive');
+  assert.equal(colourHex({ colour: 'Red', colourHex: '#123456' }), '#123456', 'own hex overrides');
+  assert.equal(colourHex({ colour: 'Chartreuse' }), null, 'unknown name → no swatch');
+  assert.equal(colourHex(null), null, 'no material → null');
+  // Every shipped material resolves to a swatch (no blanks in the catalogue).
+  assert.ok(DEFAULT_MATERIALS.every((m) => colourHex(m)), 'all shipped colours have a swatch');
 });

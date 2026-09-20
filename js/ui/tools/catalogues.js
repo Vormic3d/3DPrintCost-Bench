@@ -8,7 +8,7 @@
  * rather than being something the reader has to go and find.
  */
 
-import { el, toast, confirmModal } from '../dom.js';
+import { el, swatch, toast, confirmModal } from '../dom.js';
 import {
   section, subsection, numberField, textField, selectField, checkField, chips,
   button, buttonRow, table, muted, statTile, pill, banner, emptyState, moneyField,
@@ -18,7 +18,7 @@ import { fmtMoney, fmtRate, num } from '../../money.js';
 import {
   machineHourCost, byMachineHourCost, lifetimeHours, paybackHours, COLOUR_MODES, colourMode, slotLimit,
 } from '../../printers.js';
-import { MATERIAL_TYPES, pricePerKg, pricePerGram, materialType } from '../../materials.js';
+import { MATERIAL_TYPES, pricePerKg, pricePerGram, materialType, colourHex } from '../../materials.js';
 import { itemPrice } from '../../packaging.js';
 import {
   makeCustomer, makeId, makeAddressParts, formatAddress, ADDRESS_TYPES,
@@ -445,7 +445,7 @@ function materialsPanel(ctx) {
     }),
     table([
       selectionColumn('sel-materials', ctx),
-      { label: 'Material', get: (m) => `${m.name} · ${m.colour}` },
+      { label: 'Material', get: (m) => el('span', {}, [swatch(colourHex(m), { title: m.colour }), `${m.name} · ${m.colour}`]) },
       { label: 'Type', get: (m) => materialType(m.type).name },
       { label: 'Density', align: 'right', mono: true, get: (m) => `${materialType(m.type).density} g/cm³` },
       { label: 'Spool', align: 'right', mono: true, get: (m) => `${m.spoolWeight} g` },
@@ -494,6 +494,23 @@ function materialEditor(ctx) {
     section('material-detail', 'Material', [
       textField('material-name', 'Name', selected.name, set('name')),
       textField('material-colour', 'Colour', selected.colour, set('colour')),
+      // The swatch shown everywhere this colour is listed. Defaults from the colour
+      // name; a colour picker overrides it, and "Use the name’s default" clears it.
+      el('div', { class: 'field' }, [
+        el('label', { class: 'field__label', text: 'Swatch colour' }),
+        el('div', { class: 'btn-row' }, [
+          swatch(colourHex(selected) || '#cccccc', { title: selected.colour }),
+          el('input', {
+            type: 'color', 'data-field': 'material-hex',
+            value: colourHex(selected) || '#cccccc',
+            on: { input: (e) => { selected.colourHex = e.target.value; touch(rerender); } },
+          }),
+          selected.colourHex
+            ? button('Use the name’s default', () => { delete selected.colourHex; touch(rerender); },
+              { key: 'material-hex-clear' })
+            : null,
+        ].filter(Boolean)),
+      ]),
       textField('material-manufacturer', 'Manufacturer', selected.manufacturer, set('manufacturer')),
       selectField('material-type', 'Type',
         MATERIAL_TYPES.map((t) => ({ value: t.id, label: t.name })),

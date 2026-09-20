@@ -80,10 +80,11 @@ sidebar in the same decision order, not a numbered stepper. Details:_
 
 _Movement signs-by-reason shipped v1.0.11. Remaining:_
 
-- **Orders record movements on completion** — once an order is complete it should
-  book the stock movements automatically; confirm whether this already happens and
-  make it so if not, and ensure it pulls through to the Dashboard. (Raised
-  2026-09-10.)
+- ~~**Orders record movements on completion**~~ — DONE (verified). Recording a print
+  (`bookAttempt` → `movementsForRun`, `js/ui/tools/projects.js`) books the filament,
+  parts and resin movements as production happens (tagged `production`/`scrap`), and
+  `recordCompletion` tops the record up to the whole job on completion — so by close
+  the movements are booked, and they already feed the Dashboard via inventory balances.
 - **Keep large dropdowns usable (cascading / filtered pickers)** — as the catalogue
   grows, single long dropdowns for material/colour and stock items become unusable
   (endless scrolling). Break them down: pick **material first, then colour** filtered
@@ -124,11 +125,13 @@ _Extends the existing filament cluster; the CSV items tie inventory to real usag
   + custom w×h). "Print spool labels" generates a **downloadable PDF** at that size;
   allow **tick-selecting** several rolls into **one PDF**. Builds on the existing
   `buildSpoolLabels` sheet. (Raised 2026-09-07.)
-- **Colour swatches on filament colours** — give each material/colour a `colourHex`
-  and show a small coloured square next to the colour name everywhere a material is
-  listed or picked (Materials catalogue, estimator/project pickers, client form,
-  spool labels, slicer head rows). Needs a migration and a reusable swatch element;
-  consider a multi-colour/gradient marker. (Raised 2026-09-07.)
+- **Colour swatches on filament colours** — SHIPPED v1.0.62 for the main surfaces:
+  `colourHex(material)` (`js/materials.js`) maps the colour name → hex (12 common
+  names) with an optional per-material `colourHex` override, so swatches show with no
+  migration; reusable `swatch()` in `js/ui/dom.js` (`.swatch` in components.css).
+  Wired into the Materials catalogue (list + an editable colour picker), the filament
+  slot rows, and the material picker. _Remaining: spool labels and a gradient marker
+  for multi-colour spools — small follow-ups._ (Raised 2026-09-07.)
 - **CSV import → roll-ID matching, one aggregate movement, order type & cost
   impact** — grow the printer-history / usage CSV import so it:
   - _Matches by roll ID_ — instead of picking material + colour, the CSV references

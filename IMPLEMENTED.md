@@ -9,6 +9,17 @@ each cluster lives in `FEATURES.md`. See the `detronics-app` skill's
 _This ledger begins 2026-09-08. Features that shipped before then are recorded in
 `FEATURES.md` and the git history._
 
+## Colour swatches on filament colours (v1.0.62)
+
+A small coloured square next to filament colours. `colourHex(material)` (`js/materials.js`) returns the
+material's own `colourHex` if set, else maps the colour name via a 12-name `COLOUR_HEX` table, else null —
+so every shipped colour shows a swatch with **no migration**, and a custom colour can be set. Reusable
+`swatch(hex)` in `js/ui/dom.js` (returns null when no hex, so callers drop it inline unguarded; `.swatch`
+rule in `css/components.css`). Wired into the Materials catalogue (list column + an editable colour picker
+with a "use the name's default" reset), the filament slot rows (`js/ui/filament-slots.js`), and the
+material picker (`js/ui/material-picker.js`). Verified: 35 swatches render in the catalogue with correct
+colours, console clean. Tests in `tests/materials.test.js`. Follow-ups: spool labels, gradient marker.
+
 ## Per-part nozzle size + nozzle-change labour (v1.0.61)
 
 New company setting `settings.nozzle` (`{ enabled:false, sizes, default, changeMinutes, maxLayerRatio }`,
