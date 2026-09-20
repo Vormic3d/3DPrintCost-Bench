@@ -34,7 +34,7 @@ import * as settingsTool from './ui/tools/settings.js';
 
 /** Read this before investigating anything: a stale cache wastes more time
  *  than any bug in this app has. "Reload the app" in the footer clears it. */
-export const APP_VERSION = '1.0.62';
+export const APP_VERSION = '1.0.63';
 
 const TOOLS = [estimate, projects, catalogues, inventory, documents, dashboard, scheduler, guide, settingsTool];
 
@@ -445,6 +445,77 @@ function currentTool() {
   return TOOLS.find((t) => t.id === state.tool) || TOOLS[0];
 }
 
+/* ------------------------------------------------------- first-run tour -- */
+
+// The app's story in a few numbered starting actions. Specific to THIS app; the
+// SHAPE (a short guided path a newcomer can follow with nobody to ask) is the
+// Detronics standard — see the detronics-app skill's how-to-and-onboarding note.
+const TOUR_STEPS = [
+  { tool: 'estimate', title: 'Try a sample estimate',
+    text: 'Pick a printer and material, add a model (or just its size), and see a price in seconds.' },
+  { tool: 'settings', title: 'Set up your company',
+    text: 'Your details, the pricing model and profit — everything else reads from here.' },
+  { tool: 'catalogues', title: 'Add your printers & filament',
+    text: 'What each machine costs to run, and the spools you keep on the shelf.' },
+  { tool: 'inventory', title: 'Load your inventory',
+    text: 'Your spools, resin, hardware and packaging on hand, so stock and costs stay honest.' },
+  { tool: 'projects', title: 'Run a job',
+    text: 'Import a client request or start a project, then quote, print and deliver it.' },
+];
+
+/** Mark the tour seen so it never nags again, and remember when. Saved immediately,
+ *  not debounced, so the "show once" promise holds even if the tab is closed at once. */
+function endTour() {
+  state.ui.onboardedAt = Date.now();
+  state.ui.showTour = false;
+  save();
+}
+
+/** The welcome overlay: shown once on first open, and re-openable from the guide. */
+function showTour() {
+  const existing = document.querySelector('.modal-overlay[data-field="tour"]');
+  if (existing) existing.remove();
+
+  const go = (tool) => { state.tool = tool; endTour(); overlay.remove(); render(); };
+  const dismiss = () => { endTour(); overlay.remove(); render(); };
+
+  const overlay = el('div', {
+    class: 'modal-overlay', role: 'dialog', 'aria-modal': 'true', 'data-field': 'tour',
+    on: { click: (e) => { if (e.target === overlay) dismiss(); } },
+  }, [
+    el('div', { class: 'modal-card' }, [
+      el('h3', { class: 'modal-card__title', text: 'Welcome to 3DPrintCost Bench' }),
+      el('p', {
+        class: 'modal-card__body',
+        text: 'It turns a 3D model into a price, runs the job from quote to delivery, and shows '
+          + 'you the money and the machine behind every part. Nothing leaves your device. Here is '
+          + 'where to start — click any step to jump straight in.',
+      }),
+      el('ol', { class: 'howto-steps' }, TOUR_STEPS.map((s) => el('li', {}, [
+        el('strong', { text: s.title }),
+        el('div', { class: 'guide__step-text', text: s.text }),
+        el('div', { class: 'btn-row' }, [
+          el('button', {
+            class: 'btn', type: 'button', 'data-field': `tour-${s.tool}`,
+            text: 'Take me there', on: { click: () => go(s.tool) },
+          }),
+        ]),
+      ]))),
+      el('div', { class: 'modal-card__actions' }, [
+        el('button', {
+          class: 'btn', type: 'button', 'data-field': 'tour-guide',
+          text: 'Read the full guide', on: { click: () => go('guide') },
+        }),
+        el('button', {
+          class: 'btn btn-primary', type: 'button', 'data-field': 'tour-done',
+          text: 'Got it', on: { click: dismiss },
+        }),
+      ]),
+    ]),
+  ]);
+  document.body.appendChild(overlay);
+}
+
 /** What every tool is handed. One shape, so a tool cannot reach past it. */
 function context() {
   return {
@@ -463,6 +534,7 @@ function context() {
       saveSoon();
       render();
     },
+    startTour: showTour,
   };
 }
 
@@ -561,6 +633,9 @@ function init() {
 
   render();
   save();
+
+  // First time the app is opened on this device, take the user by the hand.
+  if (!state.ui.onboardedAt) showTour();
 
   // Team sync: a change from the module (conflict, save, reconnect) redraws;
   // reconnect to the shared file if one was set; and when the tab regains focus,

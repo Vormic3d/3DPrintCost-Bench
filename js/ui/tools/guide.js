@@ -14,7 +14,7 @@
 
 import { el } from '../dom.js';
 import {
-  section, statTile, muted, pill, selectField, textField,
+  section, statTile, muted, pill, selectField, textField, button, buttonRow,
 } from '../controls.js';
 import { state, saveSoon } from '../../state.js';
 
@@ -403,6 +403,11 @@ export function main(ctx) {
   ];
 
   return [
+    section('guide-welcome', 'New here?', [
+      muted('A short guided tour of where to start — the same one you saw the first time you '
+        + 'opened the app.'),
+      buttonRow([button('Show me around', () => ctx.startTour(), { key: 'guide-tour', primary: true })]),
+    ], { open: true }),
     howtoSection(ctx.rerender),
     faqSection(),
     section('guide-intro', 'How this tool works', [

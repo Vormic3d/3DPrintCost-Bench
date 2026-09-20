@@ -9,6 +9,18 @@ each cluster lives in `FEATURES.md`. See the `detronics-app` skill's
 _This ledger begins 2026-09-08. Features that shipped before then are recorded in
 `FEATURES.md` and the git history._
 
+## First-run onboarding tour (v1.0.63)
+
+The app now takes a new user by the hand on first open — the reference implementation of the
+onboarding pattern now codified in the `detronics-app` skill (`references/how-to-and-onboarding.md`).
+A welcome overlay (`showTour` in `js/main.js`, reusing the existing `modal-overlay`/`modal-card`
+classes) tells the app's story and lists five numbered starting actions — try a sample estimate, set
+up your company, add printers & filament, load inventory, run a job — each a "Take me there" button
+that deep-links to the tab and dismisses the tour. Shown once (guarded by `state.ui.onboardedAt`,
+saved immediately via `save()` so it never re-nags even if the tab is closed at once) and re-openable
+from How-to → "Show me around" (via a new `ctx.startTour`). Verified in-browser: shows on first load,
+navigates + persists, stays dismissed on reload, re-opens from the guide, console clean.
+
 ## Colour swatches on filament colours (v1.0.62)
 
 A small coloured square next to filament colours. `colourHex(material)` (`js/materials.js`) returns the
